@@ -50,14 +50,14 @@ const LeadForm = ({ analysisData, imageBlob, onSubmitSuccess, onCancel }) => {
 
     // Campaign Code Logic
     const TARGET_CITIES = {
-        'Boston': { code: '#BOIG2', lat: 42.3601, lon: -71.0589 },
-        'New York': { code: '#NYIG2', lat: 40.7128, lon: -74.0060 },
-        'Dallas': { code: '#DAL3DE', lat: 32.7767, lon: -96.7970 },
-        'Houston': { code: '#HOU3DE', lat: 29.7604, lon: -95.3698 },
-        'Nashville': { code: '#NAIG2', lat: 36.1627, lon: -86.7816 },
-        'Miami': { code: '#FL4IG3', lat: 25.7617, lon: -80.1918 },
-        'Chicago': { code: '#CHIIG2', lat: 41.8781, lon: -87.6298 },
-        'Orlando': { code: '#ORL4IG3', lat: 28.5383, lon: -81.3792 }
+        'Boston': { code: '#BO3CX', lat: 42.3601, lon: -71.0589 },
+        'New York': { code: '#NY3CX', lat: 40.7128, lon: -74.0060 },
+        'Dallas': { code: '#DAL3CX', lat: 32.7767, lon: -96.7970 },
+        'Houston': { code: '#HOU3CX', lat: 29.7604, lon: -95.3698 },
+        'Nashville': { code: '#NA3CX', lat: 36.1627, lon: -86.7816 },
+        'Miami': { code: '#FL3CX', lat: 25.7617, lon: -80.1918 },
+        'Chicago': { code: '#CHI3CX', lat: 41.8781, lon: -87.6298 },
+        'Orlando': { code: '#ORL3CX', lat: 28.5383, lon: -81.3792 }
     };
 
     const getDistanceFromLatLonInKm = (lat1, lon1, lat2, lon2) => {
@@ -87,7 +87,7 @@ const LeadForm = ({ analysisData, imageBlob, onSubmitSuccess, onCancel }) => {
             let cityCode;
 
             if (bostonStates.includes(state)) {
-                cityCode = '#BOIG2';
+                cityCode = '#BO3CX';
             } else {
                 // 3. Find Nearest City by distance
                 let nearestCity = null;
@@ -101,7 +101,7 @@ const LeadForm = ({ analysisData, imageBlob, onSubmitSuccess, onCancel }) => {
                     }
                 }
 
-                cityCode = nearestCity || '#NYIG2';
+                cityCode = nearestCity || '#NY3CX';
             }
 
             // 3. Age Code
