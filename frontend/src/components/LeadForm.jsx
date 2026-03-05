@@ -184,6 +184,18 @@ const LeadForm = ({ analysisData, imageBlob, onSubmitSuccess, onCancel }) => {
                     console.warn("window.fbq is not defined. Pixel not tracking.");
                 }
 
+                // Track Google Ads Conversion
+                if (window.gtag) {
+                    try {
+                        window.gtag('event', 'conversion', {
+                            send_to: 'AW-11221421114'
+                        });
+                        console.log("Google Ads conversion event fired.");
+                    } catch (e) {
+                        console.error("Google Ads conversion tracking failed:", e);
+                    }
+                }
+
                 // Small delay to ensure tracking fires before component unmount
                 setTimeout(() => {
                     onSubmitSuccess();
