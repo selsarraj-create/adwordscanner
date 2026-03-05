@@ -176,14 +176,14 @@ async def create_lead(
                 filename = f"{clean_email}_{timestamp}{extension}"
                 
                 # Upload
-                upload_response = supabase.storage.from_("lead-images").upload(
+                upload_response = supabase.storage.from_("leads").upload(
                     path=filename,
                     file=content,
                     file_options={"content-type": "application/octet-stream"}
                 )
                 
                 sb_url = os.getenv('SUPABASE_URL') or os.getenv('VITE_SUPABASE_URL')
-                image_url = f"{sb_url}/storage/v1/object/public/lead-images/{filename}"
+                image_url = f"{sb_url}/storage/v1/object/public/leads/{filename}"
             except Exception as e:
                 print(f"Upload failed: {e}")
                 return {
