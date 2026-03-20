@@ -192,8 +192,8 @@ const LeadForm = ({ analysisData, imageBlob, onSubmitSuccess, onCancel }) => {
                 // Track Google Ads Conversion (via GA4 sign_up event)
                 if (window.gtag) {
                     try {
-                        window.gtag('event', 'sign_up');
-                        console.log("GA4 'sign_up' event fired (imported as Google Ads conversion).");
+                        window.gtag('event', 'sing_up');
+                        console.log("GA4 'sing_up' event fired (imported as Google Ads conversion).");
                     } catch (e) {
                         console.error("Google Ads conversion tracking failed:", e);
                     }
