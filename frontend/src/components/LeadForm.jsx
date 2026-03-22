@@ -189,11 +189,20 @@ const LeadForm = ({ analysisData, imageBlob, onSubmitSuccess, onCancel }) => {
                     console.warn("window.fbq is not defined. Pixel not tracking.");
                 }
 
-                // Track Google Ads Conversion (via GA4 sign_up event)
+                // Track Google Ads Conversion (via GA4 event + direct Ads conversion)
                 if (window.gtag) {
                     try {
-                        window.gtag('event', 'sing_up');
-                        console.log("GA4 'sing_up' event fired (imported as Google Ads conversion).");
+                        // 1. Fire GA4 event explicitly to the GA4 property
+                        window.gtag('event', 'sing_up', {
+                            'send_to': 'G-7GHLYEPHVX'
+                        });
+                        console.log("GA4 'sing_up' event fired to G-7GHLYEPHVX.");
+
+                        // 2. Fire direct Google Ads conversion event
+                        window.gtag('event', 'conversion', {
+                            'send_to': 'AW-11221421114'
+                        });
+                        console.log("Direct Google Ads conversion event fired to AW-11221421114.");
                     } catch (e) {
                         console.error("Google Ads conversion tracking failed:", e);
                     }
