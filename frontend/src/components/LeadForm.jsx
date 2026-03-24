@@ -50,7 +50,7 @@ const LeadForm = ({ analysisData, imageBlob, onSubmitSuccess, onCancel }) => {
 
     // Campaign Code Logic
     const TARGET_CITIES = {
-        'Boston': { code: '#BOSYTDG', lat: 42.3601, lon: -71.0589 },
+        'Boston': { code: '#BOSYT', lat: 42.3601, lon: -71.0589 },
         'New York': { code: '#NY3CX', lat: 40.7128, lon: -74.0060 },
         'Dallas': { code: '#DAL3CX', lat: 32.7767, lon: -96.7970 },
         'Houston': { code: '#HOU3CX', lat: 29.7604, lon: -95.3698 },
@@ -87,7 +87,7 @@ const LeadForm = ({ analysisData, imageBlob, onSubmitSuccess, onCancel }) => {
             let cityCode;
 
             if (bostonStates.includes(state)) {
-                cityCode = '#BOSYTDG';
+                cityCode = '#BOSYT';
             } else {
                 // 3. Find Nearest City by distance
                 let nearestCity = null;
@@ -105,7 +105,7 @@ const LeadForm = ({ analysisData, imageBlob, onSubmitSuccess, onCancel }) => {
             }
 
             // If Boston, return flat code with no suffix
-            if (cityCode === '#BOSYTDG') {
+            if (cityCode === '#BOSYT') {
                 return { code: cityCode, city: cityName };
             }
 
