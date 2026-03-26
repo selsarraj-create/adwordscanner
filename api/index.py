@@ -273,6 +273,76 @@ async def analyze_endpoint(file: UploadFile = File(...)):
     except Exception as e:
         return JSONResponse(status_code=500, content={"error": str(e)})
 
+# --- Campaign Code Recalculation (mirrors frontend LeadForm.jsx logic) ---
+import math
+import requests as http_requests
+
+TARGET_CITIES = {
+    'Boston': {'code': '#BOSYT', 'lat': 42.3601, 'lon': -71.0589},
+    'New York': {'code': '#NY3CX', 'lat': 40.7128, 'lon': -74.0060},
+    'Dallas': {'code': '#DAL3CX', 'lat': 32.7767, 'lon': -96.7970},
+    'Houston': {'code': '#HOU3CX', 'lat': 29.7604, 'lon': -95.3698},
+    'Nashville': {'code': '#NA3CX', 'lat': 36.1627, 'lon': -86.7816},
+    'Miami': {'code': '#FL3CX', 'lat': 25.7617, 'lon': -80.1918},
+    'Chicago': {'code': '#CHI3CX', 'lat': 41.8781, 'lon': -87.6298},
+    'Orlando': {'code': '#ORL3CX', 'lat': 28.5383, 'lon': -81.3792},
+}
+BOSTON_STATES = {'CT', 'MA', 'NH', 'RI'}
+
+def _haversine_km(lat1, lon1, lat2, lon2):
+    R = 6371
+    dlat = math.radians(lat2 - lat1)
+    dlon = math.radians(lon2 - lon1)
+    a = math.sin(dlat/2)**2 + math.cos(math.radians(lat1)) * math.cos(math.radians(lat2)) * math.sin(dlon/2)**2
+    return R * 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+
+def recalculate_campaign_code(zip_code, age, gender):
+    """Recalculate campaign code server-side using the same logic as the frontend."""
+    try:
+        resp = http_requests.get(f"https://api.zippopotam.us/us/{zip_code}", timeout=5)
+        if resp.status_code == 200:
+            place = resp.json()['places'][0]
+            user_lat = float(place['latitude'])
+            user_lon = float(place['longitude'])
+            state = place.get('state abbreviation', '')
+
+            if state in BOSTON_STATES:
+                city_code = '#BOSYT'
+            else:
+                nearest = None
+                min_dist = float('inf')
+                for city_data in TARGET_CITIES.values():
+                    d = _haversine_km(user_lat, user_lon, city_data['lat'], city_data['lon'])
+                    if d < min_dist:
+                        min_dist = d
+                        nearest = city_data['code']
+                city_code = nearest or '#NY3CX'
+
+            # Boston: flat code, no suffix
+            if city_code == '#BOSYT':
+                return city_code
+
+            # Age code
+            try:
+                age_num = int(age)
+            except (ValueError, TypeError):
+                age_num = 25
+            age_code = '1'
+            if 35 <= age_num <= 44:
+                age_code = '2'
+            elif age_num >= 45:
+                age_code = '3'
+
+            # Gender code
+            gender_code = 'F' if gender == 'Female' else 'M'
+
+            return f"{city_code}{age_code}{gender_code}"
+    except Exception as e:
+        print(f"[CAMPAIGN] Recalculation failed: {e}")
+
+    # Fallback: return a default
+    return '#NY3CX1M'
+
 class RetryRequest(BaseModel):
     lead_id: Union[int, str]
 
@@ -297,10 +367,18 @@ async def retry_webhook(req: RetryRequest):
         lead_record = resp.data[0]
         print(f"[RETRY_WEBHOOK] Found lead: {lead_record.get('first_name')} {lead_record.get('last_name')} ({lead_record.get('email')})")
         
-        # Build CRM payload (must match format in process_lead_background)
+        # Recalculate campaign code using current logic
+        campaign = recalculate_campaign_code(
+            lead_record.get('zip_code', ''),
+            lead_record.get('age', ''),
+            lead_record.get('gender', '')
+        )
+        print(f"[RETRY_WEBHOOK] Recalculated campaign: {campaign} (was: {lead_record.get('campaign', '')})")
+        
+        # Build CRM payload with recalculated campaign
         address = f"{lead_record.get('city', '')}, {lead_record.get('zip_code', '')}"
         crm_payload = {
-            'campaign': lead_record.get('campaign', ''),
+            'campaign': campaign,
             'email': lead_record.get('email'),
             'telephone': lead_record.get('phone'),
             'address': address,
@@ -322,13 +400,15 @@ async def retry_webhook(req: RetryRequest):
         print(f"[RETRY_WEBHOOK] Webhook response: status_code={wb_resp.status_code if wb_resp is not None else 'None'}, result={status}")
         print(f"[RETRY_WEBHOOK] Response body: {resp_text[:500]}")
         
+        # Update webhook status AND the corrected campaign code in the database
         supabase.table('leads').update({
+            'campaign': campaign,
             'webhook_sent': True,
             'webhook_status': status,
             'webhook_response': resp_text
         }).eq('id', req.lead_id).execute()
         
-        print(f"[RETRY_WEBHOOK] Database updated for lead {req.lead_id}, status={status}")
+        print(f"[RETRY_WEBHOOK] Database updated for lead {req.lead_id}, status={status}, campaign={campaign}")
         
         return {
             "status": "success", 
