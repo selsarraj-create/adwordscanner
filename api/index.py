@@ -274,7 +274,7 @@ async def analyze_endpoint(file: UploadFile = File(...)):
         return JSONResponse(status_code=500, content={"error": str(e)})
 
 class RetryRequest(BaseModel):
-    lead_id: str
+    lead_id: int
 
 @app.post("/api/retry_webhook")
 async def retry_webhook(req: RetryRequest):
