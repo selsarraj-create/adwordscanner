@@ -109,14 +109,26 @@ const LeadForm = ({ analysisData, imageBlob, onSubmitSuccess, onCancel }) => {
                 return { code: cityCode, city: cityName };
             }
 
-            // 3. Age Code
+            // 3. Age + Gender Code (city-specific overrides)
             const ageNum = parseInt(age);
+            const genderCode = gender === 'Female' ? 'F' : 'M';
+
+            // Florida: custom age buckets
+            if (cityCode === '#FL3CX') {
+                if (genderCode === 'M') {
+                    // Males: all ages → 1M
+                    return { code: `${cityCode}1M`, city: cityName };
+                } else {
+                    // Females: 0-34 → 1F, 35+ → 2F
+                    const flAgeCode = ageNum >= 35 ? '2' : '1';
+                    return { code: `${cityCode}${flAgeCode}F`, city: cityName };
+                }
+            }
+
+            // Default age codes for all other cities
             let ageCode = '1';
             if (ageNum >= 35 && ageNum <= 44) ageCode = '2';
             if (ageNum >= 45) ageCode = '3';
-
-            // 4. Gender Code
-            const genderCode = gender === 'Female' ? 'F' : 'M';
 
             return { code: `${cityCode}${ageCode}${genderCode}`, city: cityName };
 

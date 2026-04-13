@@ -322,19 +322,29 @@ def recalculate_campaign_code(zip_code, age, gender):
             if city_code == '#BOSYT':
                 return city_code
 
+            # Gender code
+            gender_code = 'F' if gender == 'Female' else 'M'
+
             # Age code
             try:
                 age_num = int(age)
             except (ValueError, TypeError):
                 age_num = 25
+
+            # Florida: custom age buckets
+            if city_code == '#FL3CX':
+                if gender_code == 'M':
+                    return f"{city_code}1M"
+                else:
+                    fl_age_code = '2' if age_num >= 35 else '1'
+                    return f"{city_code}{fl_age_code}F"
+
+            # Default age codes for all other cities
             age_code = '1'
             if 35 <= age_num <= 44:
                 age_code = '2'
             elif age_num >= 45:
                 age_code = '3'
-
-            # Gender code
-            gender_code = 'F' if gender == 'Female' else 'M'
 
             return f"{city_code}{age_code}{gender_code}"
     except Exception as e:
