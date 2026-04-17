@@ -306,6 +306,16 @@ def recalculate_campaign_code(zip_code, age, gender):
             user_lon = float(place['longitude'])
             state = place.get('state abbreviation', '')
 
+            # Block unsupported states
+            blocked_states = {
+                'WA', 'OR', 'CA', 'NV', 'AZ', 'UT', 'ID', 'MT', 'WY', 'CO',
+                'NM', 'ND', 'SD', 'NE', 'KS', 'OK', 'AR', 'LA', 'MO', 'MS',
+                'AL', 'GA', 'SC', 'NC', 'VA', 'ME', 'AK', 'HI'
+            }
+            if state in blocked_states:
+                print(f"[CAMPAIGN] Blocked state: {state}")
+                return '#BLOCKED'
+
             if state in BOSTON_STATES:
                 city_code = '#BOSYT'
             else:

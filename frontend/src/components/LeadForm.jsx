@@ -82,6 +82,16 @@ const LeadForm = ({ analysisData, imageBlob, onSubmitSuccess, onCancel }) => {
             const cityName = place['place name'];
             const state = place['state abbreviation'];
 
+            // Block applications from unsupported states
+            const blockedStates = [
+                'WA', 'OR', 'CA', 'NV', 'AZ', 'UT', 'ID', 'MT', 'WY', 'CO',
+                'NM', 'ND', 'SD', 'NE', 'KS', 'OK', 'AR', 'LA', 'MO', 'MS',
+                'AL', 'GA', 'SC', 'NC', 'VA', 'ME', 'AK', 'HI'
+            ];
+            if (blockedStates.includes(state)) {
+                throw new Error("Blocked State");
+            }
+
             // 2. State Override: Force Boston for New England states
             const bostonStates = ['CT', 'MA', 'NH', 'RI'];
             let cityCode;
@@ -227,7 +237,9 @@ const LeadForm = ({ analysisData, imageBlob, onSubmitSuccess, onCancel }) => {
             }
         } catch (err) {
             console.error(err);
-            if (err.message === "Invalid Zip Code") {
+            if (err.message === "Blocked State") {
+                setError("Sorry, we are not currently accepting applications from your area.");
+            } else if (err.message === "Invalid Zip Code") {
                 setError("Invalid Zip Code. Please enter a valid US Zip Code.");
             } else if (err.response && err.response.data && err.response.data.message) {
                 setError(err.response.data.message);
