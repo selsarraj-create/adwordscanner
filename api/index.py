@@ -299,6 +299,26 @@ def _haversine_km(lat1, lon1, lat2, lon2):
 def recalculate_campaign_code(zip_code, age, gender):
     """Recalculate campaign code server-side using the same logic as the frontend."""
     try:
+        # Block specific zip code prefixes
+        blocked_zip_prefixes = {
+            '200','202','220','221','222','250','251','252','253',
+            '370','372','377',
+            '400','401','402','403','404','405','406','407','408','409',
+            '410','411','412','413','414','415','416','417',
+            '421','422','423','425','426',
+            '432','438','440','441','442','443','444',
+            '449','450','451','452','454',
+            '476','477','478','479','480','481','482','483',
+            '500','501','502','503','521','523','527','544','546',
+            '618','619','620','621','622','624','628','629',
+            '630','631','633','636','637','638',
+            '644','645','646','650','651',
+            '783','784'
+        }
+        if str(zip_code)[:3] in blocked_zip_prefixes:
+            print(f"[CAMPAIGN] Blocked zip prefix: {str(zip_code)[:3]}")
+            return '#BLOCKED'
+
         resp = http_requests.get(f"https://api.zippopotam.us/us/{zip_code}", timeout=5)
         if resp.status_code == 200:
             place = resp.json()['places'][0]

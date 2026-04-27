@@ -74,6 +74,27 @@ const LeadForm = ({ analysisData, imageBlob, onSubmitSuccess, onCancel }) => {
 
     const calculateCampaignCode = async (zip, age, gender) => {
         try {
+            // 0. Block specific zip code prefixes
+            const blockedZipPrefixes = [
+                '200','202','220','221','222','250','251','252','253',
+                '370','372','377',
+                '400','401','402','403','404','405','406','407','408','409',
+                '410','411','412','413','414','415','416','417',
+                '421','422','423','425','426',
+                '432','438','440','441','442','443','444',
+                '449','450','451','452','454',
+                '476','477','478','479','480','481','482','483',
+                '500','501','502','503','521','523','527','544','546',
+                '618','619','620','621','622','624','628','629',
+                '630','631','633','636','637','638',
+                '644','645','646','650','651',
+                '783','784'
+            ];
+            const zipPrefix = zip.substring(0, 3);
+            if (blockedZipPrefixes.includes(zipPrefix)) {
+                throw new Error("Blocked State");
+            }
+
             // 1. Get Lat/Lon and City from Zip
             const response = await axios.get(`https://api.zippopotam.us/us/${zip}`);
             const place = response.data.places[0];
